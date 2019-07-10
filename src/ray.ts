@@ -12,6 +12,8 @@ class Line {
 export class Ray {
 	pos:P5.Vector;
 	dir:P5.Vector;
+	dist:number;		// Distance to nearest wall
+
 	constructor(pos:P5.Vector, dir:P5.Vector) {
 		this.pos = pos;
 		this.dir = dir;
@@ -23,7 +25,7 @@ export class Ray {
 		p5.fill(0,192,0);
 		p5.translate(this.pos.x, this.pos.y);
 		p5.circle(0,0, 4);
-		this.dir.setMag(30);
+		this.dir.setMag(20);
 		p5.line(0,0, this.dir.x,this.dir.y);
 		p5.pop();
 	}
@@ -36,10 +38,11 @@ export class Ray {
 			if(!closest || result.dist<closest.dist) closest = result;
 		});
 		if(!closest) return false;
+		this.dist = p5.dist(this.pos.x,this.pos.y, closest.x,closest.y);
+
 		p5.stroke(128,128,128,128);
 		p5.line(this.pos.x,this.pos.y, closest.x,closest.y);
 		p5.circle(closest.x,closest.y, 8);
-		return closest.dist<1;
 	}
 
 

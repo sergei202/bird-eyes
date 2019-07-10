@@ -20,12 +20,11 @@ new P5((p5:P5) => {
 		walls.push(new Wall(p5.createVector(0,0), p5.createVector(0, p5.height), true));				// left
 		walls.push(new Wall(p5.createVector(p5.width,0), p5.createVector(p5.width, p5.height), true));	// right
 	
-
-
-		walls.push(new Wall(p5.createVector(350,100), p5.createVector(450,300)));
-		walls.push(new Wall(p5.createVector(850,200), p5.createVector(850,500)))
-		walls.push(new Wall(p5.createVector(700,500), p5.createVector(650,660)))
-		
+		walls.push(new Wall(p5.createVector(300,100), p5.createVector(500,300)));
+		walls.push(new Wall(p5.createVector(500,500), p5.createVector(800,300)));
+		walls.push(new Wall(p5.createVector(1000,50), p5.createVector(1000,300)));
+		walls.push(new Wall(p5.createVector(900,500), p5.createVector(900,p5.height)));
+		walls.push(new Wall(p5.createVector(1500,500), p5.createVector(1200,200)));
 
 		// Create birds
 		for(var i=0;i<1;i++) {

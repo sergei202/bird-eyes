@@ -36,8 +36,26 @@ class Eye {
 		p5.push();
 		p5.translate(this.pos.x, this.pos.y);
 		p5.stroke(0,0,255,255);
-		this.dir.setMag(20);
-		p5.line(0,0, this.dir.x,this.dir.y);
+		// this.dir.setMag(20);
+		// p5.line(0,0, this.dir.x,this.dir.y);
+		p5.pop();
+		this.drawSight();
+	}
+
+	drawSight() {
+		var width = 400/this.rays.length;
+		p5.push();
+		p5.translate(p5.width - width*this.rays.length-5, 5);
+			
+		// p5.noStroke();
+		this.rays.forEach((ray,i) => {
+			var closeness = (1-ray.dist/p5.width);
+			closeness = Math.pow(closeness,3); 
+			p5.fill(closeness * 255);
+			p5.rect(i*width,0, width, 100);
+			// var height = closeness*200;
+			// p5.rect(i*width, 100-height/2, width,height);
+		});
 		p5.pop();
 	}
 
@@ -62,13 +80,15 @@ export class Bird {
 
 	speed = 1;
 	angle = 0;
+	maxSpeed = 5;
+	turnSpeed = 0.01;
 
 	constructor(pos:P5.Vector) {
 		this.pos = pos;
 		this.vel = p5.createVector(this.speed,0);
 		this.acc = p5.createVector(0,0);
 
-		this.eye = new Eye(10, Math.PI/2, p5.createVector(pos.x,pos.y), p5.createVector(1,0));
+		this.eye = new Eye(50, Math.PI/2, p5.createVector(pos.x,pos.y), p5.createVector(1,0));
 	}
 
 	draw() {
@@ -79,7 +99,7 @@ export class Bird {
 		p5.translate(this.pos.x, this.pos.y);
 		p5.rotate(this.vel.heading());
 
-		p5.triangle(0,0-this.size/2, this.size,0, 0,0+this.size/2);
+		// p5.triangle(0,0-this.size/2, this.size,0, 0,0+this.size/2);
 		p5.circle(0,0, this.size);
 		p5.pop();
 
@@ -90,10 +110,10 @@ export class Bird {
 		if(!this.alive) return;
 
 		var angle = 0;
-		if(p5.keyIsDown(37)) angle = -0.02;
-		if(p5.keyIsDown(38)) this.speed += 0.1;
+		if(p5.keyIsDown(37)) angle = -(this.turnSpeed + this.speed/100);
+		if(p5.keyIsDown(38) && this.speed+0.1<this.maxSpeed) this.speed += 0.1;
 		if(p5.keyIsDown(40) && this.speed>0.1) this.speed -= 0.1;
-		if(p5.keyIsDown(39)) angle = +0.02;
+		if(p5.keyIsDown(39)) angle = +(this.turnSpeed + this.speed/100);
 
 		this.vel.rotate(angle);
 		this.vel.setMag(this.speed);
