@@ -8,6 +8,7 @@
     "build.prod": "webpack --config webpack.config.js -p"
   },
   "dependencies": {
+    "@tensorflow/tfjs": "^1.2.2",
     "@types/node": "^12.0.8",
     "@types/p5": "^0.7.3",
     "awesome-typescript-loader": "^5.2.1",

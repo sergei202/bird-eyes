@@ -13,6 +13,8 @@ export class Ray {
 	pos:P5.Vector;
 	dir:P5.Vector;
 	dist:number;		// Distance to nearest wall
+	close:number;		// 1-0 of how close something is
+	sight = 250;
 
 	constructor(pos:P5.Vector, dir:P5.Vector) {
 		this.pos = pos;
@@ -48,7 +50,7 @@ export class Ray {
 
 
 	castRayWall(wall:Wall) {
-		var dir = this.dir.setMag(p5.width);	// Set max sight distance to be the width of the canvas
+		var dir = this.dir.setMag(this.sight);	// Set max sight distance to be the width of the canvas
 		var x1=this.pos.x, y1=this.pos.y,	x2=this.pos.x+dir.x, y2=this.pos.y+dir.y;
 		var x3=wall.p1.x, y3=wall.p1.y,		x4=wall.p2.x, y4=wall.p2.y;
 
@@ -62,8 +64,9 @@ export class Ray {
 			p5.stroke(128,128,128,64);
 			p5.line(this.pos.x,this.pos.y, interX,interY);
 			// p5.circle(interX,interY, 1);
-			var dist = p5.dist(x1,y1, interX,interY);
-			return {x:interX, y:interY, dist};
+			this.dist = p5.dist(x1,y1, interX,interY);
+			this.close = 1 - this.dist/this.sight;
+			return {x:interX, y:interY, dist:this.dist};
 		}
 		return null;
 	}

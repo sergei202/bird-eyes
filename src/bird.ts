@@ -1,74 +1,10 @@
 import P5						from 'p5';
 import { Wall }					from './wall';
-import { Ray }					from './ray';
+import { Eye }					from './eye';
 import { collisionLineCircle }	from './collision';
+import { Brain }				from './brain';
+import { Dna }					from './dna';
 declare const p5:P5;
-
-class Eye {
-	pos:P5.Vector;
-	dir:P5.Vector;
-	rays:Ray[];
-
-	constructor(count:number, fov:number, pos:P5.Vector, dir:P5.Vector) {
-		this.pos = pos;
-		this.dir = dir;
-
-		var step = fov/(count-1);
-
-		this.rays = Array.from({length:count}).map((u,i) => {
-			var rayDir = this.dir.copy();
-			var angle = step*i - fov/2;
-			if(count===1) angle = 0;		// Special case if only one ray
-			rayDir.rotate(angle);
-			return new Ray(pos, rayDir);
-		});
-	}
-
-	castRays(walls:Wall[]) {
-		this.rays.forEach(ray => {
-			ray.castRayWalls(walls);
-		});
-		return false;
-	}
-
-	draw() {
-		this.rays.forEach(ray => ray.draw());
-		p5.push();
-		p5.translate(this.pos.x, this.pos.y);
-		p5.stroke(0,0,255,255);
-		// this.dir.setMag(20);
-		// p5.line(0,0, this.dir.x,this.dir.y);
-		p5.pop();
-		this.drawSight();
-	}
-
-	drawSight() {
-		var width = 400/this.rays.length;
-		p5.push();
-		p5.translate(p5.width - width*this.rays.length-5, 5);
-			
-		// p5.noStroke();
-		this.rays.forEach((ray,i) => {
-			var closeness = (1-ray.dist/p5.width);
-			closeness = Math.pow(closeness,3); 
-			p5.fill(closeness * 255);
-			p5.rect(i*width,0, width, 100);
-			// var height = closeness*200;
-			// p5.rect(i*width, 100-height/2, width,height);
-		});
-		p5.pop();
-	}
-
-	update(newPos:P5.Vector, angle:number) {
-		this.pos = newPos;
-		this.dir.rotate(angle);
-		this.rays.forEach(ray => {
-			ray.pos = this.pos;
-			ray.dir.rotate(angle);
-		});
-	}
-}
-
 
 export class Bird {
 	pos:P5.Vector;
@@ -78,17 +14,26 @@ export class Bird {
 	alive = true;
 	eye:Eye;
 
-	speed = 1;
+	speed = 2;
 	angle = 0;
 	maxSpeed = 5;
 	turnSpeed = 0.01;
+
+	brain:Brain;
+	dna:Dna;
+	count = 0;
+	fitness:number;
+	normFitness:number;
 
 	constructor(pos:P5.Vector) {
 		this.pos = pos;
 		this.vel = p5.createVector(this.speed,0);
 		this.acc = p5.createVector(0,0);
 
-		this.eye = new Eye(50, Math.PI/2, p5.createVector(pos.x,pos.y), p5.createVector(1,0));
+		this.eye = new Eye(8, Math.PI/2, p5.createVector(pos.x,pos.y), p5.createVector(1,0));
+
+		this.brain = new Brain(this.eye.rays.length, 8, 2);
+		this.dna = new Dna(this.brain.getWeights().length);
 	}
 
 	draw() {
@@ -109,22 +54,34 @@ export class Bird {
 	update(walls:Wall[]) {
 		if(!this.alive) return;
 
-		var angle = 0;
-		if(p5.keyIsDown(37)) angle = -(this.turnSpeed + this.speed/100);
+		this.angle = 0;
+		if(p5.keyIsDown(37)) this.turnLeft();
 		if(p5.keyIsDown(38) && this.speed+0.1<this.maxSpeed) this.speed += 0.1;
 		if(p5.keyIsDown(40) && this.speed>0.1) this.speed -= 0.1;
-		if(p5.keyIsDown(39)) angle = +(this.turnSpeed + this.speed/100);
+		if(p5.keyIsDown(39)) this.turnRight();
 
-		this.vel.rotate(angle);
+		var actions = this.brain.predict(this.eye.rays.map(r => r.close));
+		if(actions[0]>0.5) this.turnLeft();
+		if(actions[1]>0.5) this.turnRight();
+
+
+		this.vel.rotate(this.angle);
 		this.vel.setMag(this.speed);
 
 		this.pos.add(this.vel);
 		this.vel.add(this.acc);
-		this.eye.update(this.pos, angle);
+		this.eye.update(this.pos, this.angle);
 
 		this.seeWalls(walls);
 		if(this.collideWalls(walls)) this.alive = false;
-		// if(this.pos.y<0 || this.pos.y>=p5.height) this.alive=false;
+		this.count++;
+	}
+
+	turnLeft() {
+		this.angle -= (this.turnSpeed + this.speed/100);
+	}
+	turnRight() {
+		this.angle += (this.turnSpeed + this.speed/100);
 	}
 
 	seeWalls(walls:Wall[]) {
@@ -139,6 +96,17 @@ export class Bird {
 		return collisionLineCircle(wall.p1.x,wall.p1.y, wall.p2.x,wall.p2.y, this.pos.x,this.pos.y, this.size);
 	}
 
+	applyDna() {
+		this.brain.setWeights(this.dna.values);
+	}
+
+	calcFitness() {
+		var dist = this.pos.x/p5.width;
+		var count = this.count/1000;
+		this.fitness = Math.pow(dist,3) + Math.pow(count,2);
+
+		return this.fitness;
+	}
 }
 
 
