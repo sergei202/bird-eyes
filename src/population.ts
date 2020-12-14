@@ -7,16 +7,16 @@ export class Population {
 	birds:Bird[];
 	generation = 1;
 	bestDist = 0;
-	mutationRate = 0.05;
-	mutationSize = 0.25;
+	mutationRate = 0.01;
+	mutationSize = 0.1;
 
-	constructor(public size:number) {
+	constructor(public size:number, public start:P5.Vector) {
 		this.createBirds();
 	}
 
 	createBirds() {
 		this.birds = Array.from({length:this.size}).map((u,i) => {
-			return new Bird(p5.createVector(25, p5.height/2));
+			return new Bird(this.start);
 		});
 	}
 

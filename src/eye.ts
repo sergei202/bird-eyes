@@ -19,7 +19,7 @@ export class Eye {
 			var angle = step*i - fov/2;
 			if(count===1) angle = 0;		// Special case if only one ray
 			rayDir.rotate(angle);
-			return new Ray(pos, rayDir);
+			return new Ray(pos, rayDir, angle);
 		});
 	}
 
@@ -38,7 +38,7 @@ export class Eye {
 		// this.dir.setMag(20);
 		// p5.line(0,0, this.dir.x,this.dir.y);
 		p5.pop();
-		this.drawSight();
+		// this.drawSight();
 	}
 
 	drawSight() {
@@ -47,12 +47,17 @@ export class Eye {
 		p5.translate(p5.width - width*this.rays.length-5, 5);
 			
 		// p5.noStroke();
+		p5.stroke(255);
 		this.rays.forEach((ray,i) => {
 			p5.fill(ray.close * 255);
-			p5.rect(i*width,0, width, 100);
-			// var height = closeness*200;
-			// p5.rect(i*width, 100-height/2, width,height);
+			if(false) {
+				p5.rect(i*width,0, width, 100);
+			} else {
+				var height = ray.close*200;
+				p5.rect(i*width, 100-height/2, width,height);
+			}
 		});
+		// console.log('rays: %o', this.rays);
 		p5.pop();
 	}
 

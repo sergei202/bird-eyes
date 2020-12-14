@@ -13,7 +13,6 @@ export class Wall {
 	draw() {
 		p5.stroke(255,0,0);
 		p5.line(this.p1.x,this.p1.y, this.p2.x,this.p2.y);
-		p5.line(this.p1.x-1,this.p1.y-1, this.p2.x+1,this.p2.y+1);
 	}
 }
 
